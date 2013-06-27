@@ -25,7 +25,8 @@ mdes = NcsNavigator::Mdes::Specification.new(mdes_version)
 
 # For each transmission table in this MDES version, figure out its keys.
 $keys = mdes.transmission_tables.each_with_object({}) do |tt, h|
-  h[tt.name] = tt.wh_keys end
+  h[tt.name] = tt.wh_keys
+end
 
 # Skip to the transmission tables.
 while doc.name != 'ncs:transmission_tables'
