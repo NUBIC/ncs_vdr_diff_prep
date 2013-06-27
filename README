@@ -11,10 +11,9 @@ megabytes in size, and it's the transmission table elements where the
 bulk of the data is located.  Diffing this visually is infeasible.
 
 Although VDR submission files are XML, they have a simple, predictable
-structure that makes it possible to eliminate hierarchy (indeed, even
-any semblance of XML) from that XML file and produce a file that
-contains all transmission table data in the VDR XML file, yet is much
-more amenable to diffing via e.g. sort(1) and diff(1).
+structure that makes it possible to eliminate hierarchy from that XML
+file and produce a file that contains all transmission table data in the
+VDR XML file, yet can be diffed via e.g. sort(1) and diff(1).
 
 This tool implements that transformation process for transmission table
 elements.
@@ -59,14 +58,13 @@ This can be sorted (as in the above examples) and then diffed.
 
 4. Caveats
 
-This might not be useful.  We're just trying it out now.  Use at your own risk,
-etc.
+This might not be useful.  We're just trying it out now.  Use at your
+own risk, etc.
 
 5. License and authorship
 
 Copyright (c) 2013 Northwestern University; made available under the MIT
 license.  See LICENSE for details.
-
 
 [1]: http://www.nationalchildrensstudy.gov/about/overview/pages/ncs_concept_of_operations_04_28_11.pdf, section 8.1
 [2]: https://github.com/NUBIC/ncs_mdes_warehouse
