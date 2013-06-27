@@ -1,0 +1,73 @@
+1. vdr-diff-prep
+
+We (NUBIC) have been called upon to compare two VDR submission[1] files.
+Although ncs_mdes_warehouse[2] contains code to compare two warehouse
+instances, it is (given the right tools) faster to compare the VDR files
+in their most concrete form, i.e. text.
+
+Parts of the VDR file are easy to visually compare: the MDES version and
+study center ID, for instance.  However, VDR files can be hundreds of
+megabytes in size, and it's the transmission table elements where the
+bulk of the data is located.  Diffing this visually is infeasible.
+
+Although VDR submission files are XML, they have a simple, predictable
+structure that makes it possible to eliminate hierarchy (indeed, even
+any semblance of XML) from that XML file and produce a file that
+contains all transmission table data in the VDR XML file, yet is much
+more amenable to diffing via e.g. sort(1) and diff(1).
+
+This tool implements that transformation process for transmission table
+elements.
+
+2. How to use
+
+    ./vdr-diff-prep VDR_FILE MDES_VERSION | sort > vdr_file.out
+
+Standard input can also be used:
+
+     bzcat huge_vdr.xml.bz2 | ./vdr-diff-prep - 3.2 | sort > vdr_file.out
+
+Finally, if you have two VDR files for MDES 3.2, you want to diff them,
+and you have more CPU and I/O bandwidth than time, you might do
+something like this:
+
+     parallel --header : './vdr-diff-prep {xml} 3.2 | sort > {xml}.out' \
+       ::: xml vdr1.xml vdr2.xml
+
+See [3] for more information about parallel(1).
+
+The output files can then be diffed using your favorite text diffing tool.
+
+3. The output file
+
+The output file looks like this:
+
+    addressSOME_ADDRESS_ID:du_id     12345
+    addressSOME_ADDRESS_ID:institute_id      nil
+    addressSOME_ADDRESS_ID:person_id nil
+    addressSOME_ADDRESS_ID:provider_id       nil
+    addressSOME_ADDRESS_ID:psu_id    12345678
+    addressSOME_ADDRESS_ID:state     -4
+
+That is, each line is a variable in a transmission table.  Each line has
+two columns; columns are separated by a tab.  The first column is a
+concatentation of the transmission table name and its keys' values; the
+second column is the textual value of the variable (with the exception
+that variables with nil value show up as "nil").
+
+This can be sorted (as in the above examples) and then diffed.
+
+4. Caveats
+
+This might not be useful.  We're just trying it out now.  Use at your own risk,
+etc.
+
+5. License and authorship
+
+Copyright (c) 2013 Northwestern University; made available under the MIT
+license.  See LICENSE for details.
+
+
+[1]: http://www.nationalchildrensstudy.gov/about/overview/pages/ncs_concept_of_operations_04_28_11.pdf, section 8.1
+[2]: https://github.com/NUBIC/ncs_mdes_warehouse
+[3]: http://www.gnu.org/software/parallel/

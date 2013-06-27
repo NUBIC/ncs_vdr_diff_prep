@@ -1,0 +1,111 @@
+#!/usr/bin/env ruby
+
+require 'libxml'
+require 'ncs_navigator/mdes'
+require File.expand_path('../mdes_ext', __FILE__)
+
+if ARGV.length < 2
+  $stderr.puts "Usage: #$0 VDR_FILE MDES_VERSION"
+  exit 1
+end
+
+doc = if ARGV[0] == '-'
+        LibXML::XML::Reader.io($stdin)
+      else
+        $stderr.puts "Opening #{ARGV[0]}"
+        LibXML::XML::Reader.file(ARGV[0])
+      end
+
+doc_read_ok = false
+
+mdes_version = ARGV[1]
+
+$stderr.puts "Loading MDES #{mdes_version}"
+mdes = NcsNavigator::Mdes::Specification.new(mdes_version)
+
+# For each transmission table in this MDES version, figure out its keys.
+$keys = mdes.transmission_tables.each_with_object({}) do |tt, h|
+  h[tt.name] = tt.wh_keys end
+
+# Skip to the transmission tables.
+while doc.name != 'ncs:transmission_tables'
+  doc_read_ok = doc.read
+end
+
+# Is everything sane?
+if !doc_read_ok
+  $stderr.puts <<-END
+  We ended up reading to EOF while trying to find ncs:transmission_tables.
+  Aborting.
+  END
+  exit 2
+end
+
+def id_for(node)
+  name = node.name
+  keys = $keys[name]
+  children = node.children
+
+  keys.sort.map do |k|
+    kv = children.detect { |c| c.name == k.name }
+
+    if kv.nil? || kv.child.nil?
+      'MISSING'
+    else
+      kv.child.inspect
+    end
+  end.join
+end
+
+$stderr.puts "VDR transformation in progress"
+
+i = 0
+
+# Okay, now we're at the transmission tables.  Read each row.
+while doc.read
+  node = doc.expand
+  i += 1
+
+  if i % 10000 == 0
+    $stderr.print "#{i}..."
+  end
+
+  # We are only interested in top-level row elements, so we skip non-element
+  # (i.e. text) nodes and nodes with non-text-node children.
+  if node.element? && node.children? && node.children.any? { |c| !c.text? }
+    # Generate a set of new node definitions that's amenable to textual diff.
+    #
+    # Given
+    #
+    #   <dwelling_unit>
+    #     <du_id>100</du_id>
+    #     <foo>bar</foo>
+    #     <qux>baz</qux>
+    #   </dwelling_unit>
+    #
+    # this process will produce
+    # 
+    #     dwelling_unit100:du_id  100
+    #     dwelling_unit100:foo  bar
+    #     dwelling_unit100:qux  baz
+    ns = node.name + id_for(node)
+
+    node.children.each do |c|
+      if c.element?
+        text = c.child.inspect
+
+        if text
+          # Newlines play badly with textual sort and diff, so escape them.
+          text.gsub!("\n", "\\n")
+          text.gsub!("\r", "\\r")
+        end
+
+        puts "#{ns}:#{c.name}\t#{text}"
+      end
+    end
+  end
+end
+
+$stderr.print i
+$stderr.puts
+$stderr.puts 'Transformation finished'

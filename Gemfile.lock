@@ -1,0 +1,16 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    libxml-ruby (2.6.0)
+    ncs_mdes (0.12.0)
+      nokogiri (~> 1.5.6)
+    nokogiri (1.5.9)
+    nokogiri (1.5.9-java)
+
+PLATFORMS
+  java
+  ruby
+
+DEPENDENCIES
+  libxml-ruby
+  ncs_mdes
