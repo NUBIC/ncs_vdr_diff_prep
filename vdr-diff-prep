@@ -86,10 +86,10 @@ while doc.read
     #
     # this process will produce
     # 
-    #     dwelling_unit100:du_id  100
-    #     dwelling_unit100:foo  bar
-    #     dwelling_unit100:qux  baz
-    ns = node.name + id_for(node)
+    #     dwelling_unit:100:du_id  100
+    #     dwelling_unit:100:foo  bar
+    #     dwelling_unit:100:qux  baz
+    ns = node.name + ":" + id_for(node)
 
     node.children.each do |c|
       if c.element?
