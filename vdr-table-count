@@ -13,13 +13,23 @@ shell = Shell.new(ARGV[0], ARGV[1], logger)
 
 count = {}
 
+i = 0
+
 shell.run do |node, _, name|
   if !count.has_key?(name)
     count[name] = 1
   else
     count[name] += 1
   end
+
+  i += 1
+
+  if i % 10000 == 0
+    logger.info "#{i} records processed"
+  end
 end
+
+logger.info "#{i} records processed"
 
 count.keys.sort.each do |k|
   puts "#{k}\t#{count[k]}"
