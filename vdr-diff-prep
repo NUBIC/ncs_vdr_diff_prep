@@ -30,7 +30,7 @@ i = 0
 #     dwelling_unit:100:du_id  100
 #     dwelling_unit:100:foo  bar
 #     dwelling_unit:100:qux  baz
-shell.run do |node, ns|
+shell.run do |node, ns, _|
   node.children.each do |c|
     if c.element?
       text = c.child.inspect

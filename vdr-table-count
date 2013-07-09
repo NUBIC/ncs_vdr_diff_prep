@@ -1,20 +1,26 @@
 #!/usr/bin/env ruby
 
-require 'tempfile'
+require 'logger'
+require File.expand_path('../lib/shell', __FILE__)
 
 if ARGV.length < 2
   $stderr.puts "Usage: #$0 VDR_FILE MDES_VERSION"
   exit 1
 end
 
-Tempfile.open($0) do |f|
-  puts "Generating diffstream to #{f.path}"
+logger = Logger.new($stderr)
+shell = Shell.new(ARGV[0], ARGV[1], logger)
 
-  vdr_diff_prep = File.expand_path('../vdr-diff-prep', __FILE__)
+count = {}
 
-  cmd = "#{vdr_diff_prep} #{ARGV[0]} #{ARGV[1]} | sort > #{f.path} 2>/dev/null"
-  system(cmd)
+shell.run do |node, _, name|
+  if !count.has_key?(name)
+    count[name] = 1
+  else
+    count[name] += 1
+  end
+end
 
-  cmd = "cat #{f.path} | cut -d':' -f1-2 | uniq | cut -d':' -f1 | uniq -c"
-  system(cmd)
+count.keys.sort.each do |k|
+  puts "#{k}\t#{count[k]}"
 end

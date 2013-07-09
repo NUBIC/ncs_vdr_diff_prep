@@ -48,7 +48,7 @@ class Shell
       if node.element? && node.children? && node.children.any? { |c| !c.text? }
         ns = node.name + ":" + id_for(node, keys)
 
-        yield node, ns
+        yield node, ns, node.name
       end
     end
   end
